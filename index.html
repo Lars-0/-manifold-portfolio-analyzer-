@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manifold Portfolio Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Manifold Portfolio Analyzer</h1>
+            <p class="subtitle">Find positions where your "return if correct" is below the margin loan rate</p>
+        </header>
+
+        <div class="input-section">
+            <label for="username">Enter your Manifold username:</label>
+            <div class="input-group">
+                <input type="text" id="username" placeholder="e.g., LarsOsborne" autocomplete="off">
+                <button id="analyze-btn" onclick="analyzePortfolio()">Analyze</button>
+            </div>
+            <p class="hint">Just the username, not the full URL</p>
+        </div>
+
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Fetching positions from Manifold API...</p>
+            <p class="loading-detail" id="loading-detail"></p>
+        </div>
+
+        <div id="error" class="error hidden"></div>
+
+        <div id="results" class="results hidden">
+            <div class="summary">
+                <h2>Positions Below Margin Rate</h2>
+                <p class="margin-info">
+                    Margin loan rate: <strong>0.03% daily = 10.9% annually</strong>
+                </p>
+                <p id="summary-text"></p>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-box">
+                    <span class="stat-value" id="stat-positions">0</span>
+                    <span class="stat-label">Positions</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-value" id="stat-recoverable">M$0</span>
+                    <span class="stat-label">Recoverable Mana</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-value" id="stat-payout">M$0</span>
+                    <span class="stat-label">Potential Payout</span>
+                </div>
+            </div>
+
+            <table id="positions-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Market</th>
+                        <th>Position</th>
+                        <th class="right">Sell Now</th>
+                        <th class="right">Win Payout</th>
+                        <th class="right">Days to Close</th>
+                        <th class="right">Return If Correct</th>
+                    </tr>
+                </thead>
+                <tbody id="positions-body">
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            <p>
+                This tool analyzes your Manifold Markets portfolio to find positions where the 
+                annualized return (if your bet wins) is less than the cost of margin loans (10.9%/year).
+            </p>
+            <p>
+                <strong>Why does this matter?</strong> If a position's return is below the margin rate, 
+                you might be better off selling and using that mana elsewhere.
+            </p>
+            <p>
+                <strong>Note:</strong> Returns are calculated assuming the market resolves at its close date. 
+                Markets that could resolve early (e.g., "Will X happen by 2030?" or date-based answers) 
+                may have higher actual returns if they resolve sooner. Use your judgment!
+            </p>
+            <p class="disclaimer">
+                Data fetched directly from the <a href="https://docs.manifold.markets/api" target="_blank">Manifold API</a>. 
+                Not financial advice!
+            </p>
+        </footer>
+    </div>
+
+    <script src="manifold-api.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
