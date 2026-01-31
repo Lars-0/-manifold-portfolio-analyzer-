@@ -132,6 +132,7 @@ function displayResults(positions, totalPositions) {
         }
         
         row.innerHTML = `
+            <td class="hide-cell"><button class="hide-btn" onclick="hideRow(this)" title="Hide this row">×</button></td>
             <td>${index + 1}</td>
             <td>
                 <a href="${escapeHtml(position.url)}" target="_blank" class="market-link">
@@ -195,4 +196,36 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function hideRow(button) {
+    const row = button.closest('tr');
+    row.classList.add('hidden-row');
+    updateHiddenCount();
+}
+
+function showAllRows() {
+    document.querySelectorAll('.hidden-row').forEach(row => {
+        row.classList.remove('hidden-row');
+    });
+    updateHiddenCount();
+}
+
+function updateHiddenCount() {
+    const hiddenCount = document.querySelectorAll('.hidden-row').length;
+    let showAllBtn = document.getElementById('show-all-btn');
+    
+    if (hiddenCount > 0) {
+        if (!showAllBtn) {
+            showAllBtn = document.createElement('button');
+            showAllBtn.id = 'show-all-btn';
+            showAllBtn.className = 'show-all-btn';
+            showAllBtn.onclick = showAllRows;
+            document.querySelector('.summary').appendChild(showAllBtn);
+        }
+        showAllBtn.textContent = `Show ${hiddenCount} hidden row${hiddenCount > 1 ? 's' : ''}`;
+        showAllBtn.classList.remove('hidden');
+    } else if (showAllBtn) {
+        showAllBtn.classList.add('hidden');
+    }
 }

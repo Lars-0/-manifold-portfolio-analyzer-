@@ -298,6 +298,51 @@ tbody tr:hover {
     border-radius: 4px;
 }
 
+/* Hide button */
+.hide-cell {
+    width: 30px;
+    padding: 8px 4px !important;
+}
+
+.hide-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: #f0f0f0;
+    color: #999;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    transition: all 0.2s;
+}
+
+.hide-btn:hover {
+    background: var(--error-color);
+    color: white;
+}
+
+.hidden-row {
+    display: none;
+}
+
+.show-all-btn {
+    margin-top: 15px;
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    background: rgba(255,255,255,0.2);
+}
+
+.show-all-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
 /* Footer */
 footer {
     margin-top: 30px;
