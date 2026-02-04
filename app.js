@@ -11,6 +11,11 @@ const errorDiv = document.getElementById('error');
 const resultsDiv = document.getElementById('results');
 const positionsBody = document.getElementById('positions-body');
 
+// Store positions for sorting
+let currentPositions = [];
+let currentSortColumn = null;
+let currentSortDirection = 'asc';
+
 // Allow Enter key to trigger analysis
 usernameInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
@@ -68,12 +73,13 @@ async function analyzePortfolio() {
         updateLoadingDetail('Analyzing positions...');
         const allPositions = ManifoldAPI.processPositions(rawData);
         
-        // Step 4: Filter below margin rate
-        const belowMargin = ManifoldAPI.getPositionsBelowMarginRate(allPositions);
+        // Step 4: Get all positions sorted (below margin first)
+        const allPositionsSorted = ManifoldAPI.getAllPositionsSorted(allPositions);
+        const belowMarginCount = allPositionsSorted.filter(p => p.returnIfCorrect < ManifoldAPI.MARGIN_RATE_ANNUAL).length;
         
         // Display results
         hideLoading();
-        displayResults(belowMargin, allPositions.length);
+        displayResults(allPositionsSorted, allPositions.length, belowMarginCount);
         
     } catch (error) {
         hideLoading();
@@ -86,20 +92,104 @@ async function analyzePortfolio() {
 /**
  * Display the results table
  */
-function displayResults(positions, totalPositions) {
+function displayResults(positions, totalPositions, belowMarginCount) {
+    // Store positions for sorting
+    currentPositions = positions;
+    
     // Update summary
     document.getElementById('summary-text').textContent = 
-        `Found ${positions.length} of ${totalPositions} positions with return below margin rate.`;
+        `Showing ${positions.length} positions. ${belowMarginCount} with return below margin rate.`;
     
-    // Update stats
-    const totalSaleValue = positions.reduce((sum, p) => sum + p.saleValue, 0);
-    const totalPayout = positions.reduce((sum, p) => sum + p.shares, 0);
+    // Update stats (only for below-margin positions)
+    const belowMarginPositions = positions.filter(p => p.returnIfCorrect < ManifoldAPI.MARGIN_RATE_ANNUAL);
+    const totalSaleValue = belowMarginPositions.reduce((sum, p) => sum + p.saleValue, 0);
+    const totalPayout = belowMarginPositions.reduce((sum, p) => sum + p.shares, 0);
     
-    document.getElementById('stat-positions').textContent = positions.length;
+    document.getElementById('stat-positions').textContent = belowMarginCount;
     document.getElementById('stat-recoverable').textContent = `M$${Math.round(totalSaleValue).toLocaleString()}`;
     document.getElementById('stat-payout').textContent = `M$${Math.round(totalPayout).toLocaleString()}`;
     
+    // Setup sort handlers (only once)
+    setupSortHandlers();
+    
     // Build table rows
+    renderTableRows(positions);
+    
+    showResults();
+}
+
+/**
+ * Setup click handlers for sortable columns
+ */
+function setupSortHandlers() {
+    const headers = document.querySelectorAll('th.sortable');
+    headers.forEach(header => {
+        // Remove existing listener by cloning
+        const newHeader = header.cloneNode(true);
+        header.parentNode.replaceChild(newHeader, header);
+        
+        newHeader.addEventListener('click', () => {
+            const sortKey = newHeader.dataset.sort;
+            
+            // Toggle direction if same column, otherwise default to ascending
+            if (currentSortColumn === sortKey) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = sortKey;
+                currentSortDirection = 'asc';
+            }
+            
+            // Update header styles
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+            newHeader.classList.add(currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+            
+            // Sort and re-render
+            const sorted = sortPositions(currentPositions, sortKey, currentSortDirection);
+            renderTableRows(sorted);
+        });
+    });
+}
+
+/**
+ * Sort positions by a given key
+ */
+function sortPositions(positions, key, direction) {
+    const sorted = [...positions].sort((a, b) => {
+        let aVal, bVal;
+        
+        if (key === 'question') {
+            aVal = a.question.toLowerCase();
+            bVal = b.question.toLowerCase();
+        } else if (key === 'payout') {
+            aVal = a.shares;
+            bVal = b.shares;
+        } else {
+            aVal = a[key];
+            bVal = b[key];
+        }
+        
+        // Handle null/undefined
+        if (aVal == null) aVal = 0;
+        if (bVal == null) bVal = 0;
+        
+        if (typeof aVal === 'string') {
+            return direction === 'asc' 
+                ? aVal.localeCompare(bVal)
+                : bVal.localeCompare(aVal);
+        }
+        
+        return direction === 'asc' ? aVal - bVal : bVal - aVal;
+    });
+    
+    return sorted;
+}
+
+/**
+ * Render table rows from positions array
+ */
+function renderTableRows(positions) {
     positionsBody.innerHTML = '';
     
     positions.forEach((position, index) => {
@@ -126,9 +216,13 @@ function displayResults(positions, totalPositions) {
         
         // Return styling
         const returnPercent = (position.returnIfCorrect * 100).toFixed(3);
-        let returnClass = 'return-low';
-        if (position.returnIfCorrect < 0.05) {
+        let returnClass = '';
+        if (position.returnIfCorrect >= ManifoldAPI.MARGIN_RATE_ANNUAL) {
+            returnClass = 'return-good';
+        } else if (position.returnIfCorrect < 0.05) {
             returnClass = 'return-very-low';
+        } else {
+            returnClass = 'return-low';
         }
         
         row.innerHTML = `
@@ -153,8 +247,6 @@ function displayResults(positions, totalPositions) {
         
         positionsBody.appendChild(row);
     });
-    
-    showResults();
 }
 
 // UI Helper functions

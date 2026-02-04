@@ -42,7 +42,7 @@
             <div class="stats-row">
                 <div class="stat-box">
                     <span class="stat-value" id="stat-positions">0</span>
-                    <span class="stat-label">Positions</span>
+                    <span class="stat-label">Below Margin</span>
                 </div>
                 <div class="stat-box">
                     <span class="stat-value" id="stat-recoverable">M$0</span>
@@ -59,12 +59,12 @@
                     <tr>
                         <th></th>
                         <th>#</th>
-                        <th>Market</th>
-                        <th>Position</th>
-                        <th class="right">Sell Now</th>
-                        <th class="right">Win Payout</th>
-                        <th class="right">Days to Close</th>
-                        <th class="right">Return If Correct</th>
+                        <th class="sortable" data-sort="question">Market <span class="sort-arrows"><span class="arrow up">▲</span><span class="arrow down">▼</span></span></th>
+                        <th class="sortable" data-sort="shares">Position <span class="sort-arrows"><span class="arrow up">▲</span><span class="arrow down">▼</span></span></th>
+                        <th class="right sortable" data-sort="saleValue">Sell Now <span class="sort-arrows"><span class="arrow up">▲</span><span class="arrow down">▼</span></span></th>
+                        <th class="right sortable" data-sort="payout">Win Payout <span class="sort-arrows"><span class="arrow up">▲</span><span class="arrow down">▼</span></span></th>
+                        <th class="right sortable" data-sort="daysUntilClose">Days to Close <span class="sort-arrows"><span class="arrow up">▲</span><span class="arrow down">▼</span></span></th>
+                        <th class="right sortable" data-sort="returnIfCorrect">Return If Correct <span class="sort-arrows"><span class="arrow up">▲</span><span class="arrow down">▼</span></span></th>
                     </tr>
                 </thead>
                 <tbody id="positions-body">

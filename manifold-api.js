@@ -309,12 +309,33 @@ function getPositionsBelowMarginRate(positions) {
         .sort((a, b) => (a.returnIfCorrect || 0) - (b.returnIfCorrect || 0));
 }
 
+/**
+ * Get all positions sorted: below margin first (ascending), then above margin (descending)
+ */
+function getAllPositionsSorted(positions) {
+    const withReturns = positions.filter(p => p.returnIfCorrect !== null);
+    
+    // Split into below and above margin rate
+    const belowMargin = withReturns.filter(p => p.returnIfCorrect < MARGIN_RATE_ANNUAL);
+    const aboveMargin = withReturns.filter(p => p.returnIfCorrect >= MARGIN_RATE_ANNUAL);
+    
+    // Sort below by return ascending (worst first)
+    belowMargin.sort((a, b) => (a.returnIfCorrect || 0) - (b.returnIfCorrect || 0));
+    
+    // Sort above by return descending (best first)
+    aboveMargin.sort((a, b) => (b.returnIfCorrect || 0) - (a.returnIfCorrect || 0));
+    
+    // Combine: below margin first, then above margin
+    return [...belowMargin, ...aboveMargin];
+}
+
 // Export for use in app.js
 window.ManifoldAPI = {
     getUserId,
     getUserPositions,
     processPositions,
     getPositionsBelowMarginRate,
+    getAllPositionsSorted,
     MARGIN_RATE_ANNUAL,
     MARGIN_RATE_DAILY
 };
